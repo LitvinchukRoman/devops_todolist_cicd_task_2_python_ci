@@ -6,13 +6,10 @@ on:
     branches: [ "main", "develop" ]
   pull_request:
     branches: [ "main" ]
+
 env:  
   PYTHON_VERSION: 3.8
-  
-defaults:
-    run:
-      working-directory: ./src
-      
+
 jobs:
   python-ci:
     runs-on: ubuntu-latest
@@ -20,26 +17,40 @@ jobs:
       max-parallel: 4
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python ${{ env.PYTHON_VERSION }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install flake8 pytest pytest-cov
-    - name: Lint with flake8
-      run: |
-        flake8 . --show-source --statistics
-    - name: Test with pytest
-      run: |
-        pytest -v --cov-report=term-missing --cov=. --cov-report=json
-      continue-on-error: true
-    - name: Check Complexity
-      run: |
-        cd ../
-        flake8 . --exit-zero --max-complexity=10 --statistics
+      - uses: actions/checkout@v4
 
-        
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8 pytest coverage
+
+      - name: Apply migrations
+        run: python manage.py migrate
+        working-directory: ./  # якщо manage.py в корені репозиторію
+
+      - name: Lint with flake8
+        run: flake8 . --show-source --statistics
+        working-directory: ./  # або ./src якщо код у src
+
+      - name: Run tests with coverage
+        run: |
+          python -m coverage run -m pytest
+          python -m coverage report -m
+        working-directory: ./  # або ./src
+
+      - name: Check Complexity
+        run: flake8 . --exit-zero --max-complexity=10 --statistics
+        working-directory: ./  # або ./src
+
+      - name: Upload Python source files as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-source
+          path: |
+            **/*.py
