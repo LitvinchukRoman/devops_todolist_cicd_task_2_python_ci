@@ -71,6 +71,7 @@ def readiness_check():
         return Response("Ready", status=200)
 
 
+
 @app.route("/external-call")
 def external_call():
     external_url = os.getenv("EXTERNAL_ENDPOINT")
