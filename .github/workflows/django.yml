@@ -35,21 +35,17 @@ jobs:
 
       - name: Apply migrations
         run: python manage.py migrate
-        working-directory: ./  # якщо manage.py в корені репозиторію
 
       - name: Lint with flake8
         run: flake8 . --show-source --statistics
-        working-directory: ./  # або ./src якщо код у src
 
       - name: Run tests with coverage
         run: |
           python -m coverage run -m pytest
           python -m coverage report -m
-        working-directory: ./  # або ./src
 
       - name: Check Complexity
         run: flake8 . --exit-zero --max-complexity=10 --statistics
-        working-directory: ./  # або ./src
 
       - name: Upload Python source files as artifact
         uses: actions/upload-artifact@v4
