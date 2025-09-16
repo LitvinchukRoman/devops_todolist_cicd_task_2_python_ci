@@ -9,6 +9,9 @@ on:
 
 env:  
   PYTHON_VERSION: 3.8
+defaults:
+  run:
+    working-directory: ./src
 
 jobs:
   python-ci:
